@@ -1,0 +1,21 @@
+<div class="jumbotron text-center">
+  <h1>MongoNews</h1> 
+  <p>The BusinessInsider Edition</p> 
+  <div class='container'>
+    <button type='button' class='btn btn-danger'>Scrape for New Articles</button>
+  </div>
+</div>
+
+
+<script>
+  $(document).on('click', 'button', scrapeTime());
+
+  function scrapeTime(){
+    $.get('/scrape', function(){
+      {{!--console.log(data);--}}
+    });
+    $.getJSON('/scrape', function(data){
+      console.log(data);
+    })
+  }
+</script>
