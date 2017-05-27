@@ -1,21 +1,46 @@
+
 <div class="jumbotron text-center">
-  <h1>MongoNews</h1> 
-  <p>The BusinessInsider Edition</p> 
+  <h1>MongoNews</h1>
+  <p>The BusinessInsider Edition</p>
   <div class='container'>
-    <button type='button' class='btn btn-danger'>Scrape for New Articles</button>
+    <button type='button' class='btn btn-primary'>Scrape for New Articles</button>
   </div>
 </div>
+<div class="container-fluid bg-grey" id='articleOutput'>
 
+</div>
 
 <script>
-  $(document).on('click', 'button', scrapeTime());
-
-  function scrapeTime(){
-    $.get('/scrape', function(){
-      {{!--console.log(data);--}}
+  $(document).on('click', 'button', 
+    function(){
+      scrapeTime()
     });
-    $.getJSON('/scrape', function(data){
+
+  $(document).on('click', '#saveArticle', 
+    function(){
+      saveArticle(this.getAttribute('title'), this.getAttribute('link'))
+    }
+  );
+
+  function scrapeTime() {
+    $.getJSON('/scrape', function (data) {
       console.log(data);
+      for (var i = 0; i < data.length; i++) {
+        $('#articleOutput').append(
+          '<div class="container artiBox"><span><h2 style="width: 85%">' + data[i].title + '</h2><button style="float: right" title='+'"'+data[i].title+'"'+' link='+data[i].link.slice(11, data[i].length)+' id="saveArticle" class="btn btn-success pull-right">'+'Save Article'+'</button></span><a style="float: left" href=' + data[i].link + '>' + data[i].link.slice(11, data[i].length) + '</a></div>'
+        )
+      }
+    })
+  }
+
+  function saveArticle(title, link){
+    console.log('title: '+title);
+    console.log('link: '+link);
+    $.post('/save', {
+        title: title,
+        link: link
+        }, function(res, err){
+      console.log(res);
     })
   }
 </script>

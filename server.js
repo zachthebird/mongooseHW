@@ -12,13 +12,30 @@ var request = require('request');
 
 var app = express();
 
-mongoose.connect('mongodb://localhost/newsScraper');
-
 var PORT = 4321;
+
+// parse application/x-www-form-urlencoded 
+app.use(bodyParser.urlencoded({ extended: false }))
+ 
+// parse application/json 
+app.use(bodyParser.json())
+
+app.use(express.static("public"));
+
+mongoose.connect('mongodb://localhost/newsScraper');
+var db = mongoose.createConnection('mongodb://localhost/newsScraper');
+
+var Schema = mongoose.Schema;
+
+var newsSchema = new Schema({
+  title:  String,
+  link: String
+});
 
 app.engine('handlebars', exphbs({
     defaultLayout: 'main'
 }));
+
 app.set('view engine', 'handlebars');
 
 app.get('/', function (req, res) {
@@ -53,6 +70,26 @@ app.get('/scrape', function (req, res) {
         res.send(result);
     });
 });
+
+app.post('/save', function(req, res){
+    console.log('request: ', req.body);
+    console.log('response: ', res.body);
+    newsSchema.findByIdAndUpdate({
+        $push: {
+            article: {
+                title: req.body.title,
+                link: req.body.link
+            }
+        }
+    })
+})
+
+app.get('/saved', function(req, res, err){
+    // if(err){
+    //     throw err;
+    // }
+    res.render('saved');
+})
 
 app.listen(PORT, function () {
     console.log('app listening on PORT ' + PORT);

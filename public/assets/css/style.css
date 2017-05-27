@@ -1,0 +1,21 @@
+.jumbotron { 
+    background-color: #f4511e !important; /* Orange */
+    color: #ffffff !important;
+}
+
+h2{
+    float: left;
+}
+
+.btn-success{
+    margin-top: 30px;
+}
+
+.artiBox{
+    border: 3px;
+    border-color: #f4511e;
+    border-style: solid;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
