@@ -1,6 +1,95 @@
 <div class="jumbotron text-center">
   <h1>MongoNews</h1>
-  <p>The BusinessInsider Edition</p>
+  <p>The Business Insider Edition</p>
 </div>
 <div class="container-fluid bg-grey" id='savedArticleOutput'>
+  {{#each news}}
+  <div class="container artiBox">
+    <span>
+      <h2 style="width: 85%">
+    {{#if title}}
+      {{title}}
+    {{^}}
+      Empty
+    {{/if}}
+  </h2>
+  </span>
+    <a style="float: left" href="http://www.{{link}}" target='_blank' title='{{title}}' link='{{link}}'>{{link}}</a>
+    <button style="margin-top: 10px" data-toggle="modal" data-target="#myModal" id='commentBtn' class='btn btn-primary' title='{{title}}'
+      link='{{link}}'>Comment</button>
+    <button style="margin-top: 5px" class='btn btn-danger' id='removeSaved' title='{{title}}' link='{{link}}'>Unsave Article</button>
+    <button style="margin-top: 5px" class='btn btn-success' id='showComments' title='{{title}}' link='{{link}}'>Show Comments</button>
+  </div><br>
+  <div class="modal fade" id="myModal" role="dialog">
+
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">{{title}}</h4>
+        </div>
+        <div class="modal-body">
+          <form id='commentForm'>
+            <div class="form-group">
+              <label class='control-label' for="comment">Comment:</label>
+              <textarea class="form-control {{!--required--}}" rows="5" id="comment"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" {{!--data-dismiss="modal" --}} id='submitComment' title='{{title}}' link='{{link}}'>Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>{{~/each}}
+
 </div>
+
+<script>
+  $(document).on('click', '#removeSaved', function () {
+    event.preventDefault();
+    removeSaved(this.getAttribute('title'));
+    window.location.reload();
+  });
+
+  $(document).on('click', '#submitComment', function () {
+    submitComment(this.getAttribute('title'), $('textarea').val());
+  })
+
+  function removeSaved(title) {
+    console.log(title);
+    $.post('/remove', {
+      title: title
+    }, function (req, res) {
+      if (err) {
+        throw err;
+      }
+      console.log(res);
+    })
+  }
+
+  var commentSubmitted = false;
+
+  function submitComment(title, comment) {
+    console.log(title, comment);
+    $.post('/postcomment', {
+      title: title,
+      comment: comment
+    }, function (req, res) {
+      console.log('req.body: ' + req.body);
+      console.log('res: ' + res);
+      if (res === 'success') {
+        commentSubmitted = true;
+      }
+    })
+  }
+
+  if (commentSubmitted = true) {
+    displaySuccessModal();
+  }
+
+  function displaySuccessModal() {
+
+    commentSubmitted = false;
+  }
+</script>

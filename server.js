@@ -10,6 +10,8 @@ var cheerio = require('cheerio');
 
 var request = require('request');
 
+var News = require('./newsModel.js');
+
 var app = express();
 
 var PORT = 4321;
@@ -23,14 +25,16 @@ app.use(bodyParser.json())
 app.use(express.static("public"));
 
 mongoose.connect('mongodb://localhost/newsScraper');
+
 var db = mongoose.createConnection('mongodb://localhost/newsScraper');
 
-var Schema = mongoose.Schema;
+db.on('error', function(error){
+    console.log("Mongoose error: " + error);
+})
 
-var newsSchema = new Schema({
-  title:  String,
-  link: String
-});
+db.once('open', function(){
+    console.log("Mongoose connection successful");
+})
 
 app.engine('handlebars', exphbs({
     defaultLayout: 'main'
@@ -73,22 +77,51 @@ app.get('/scrape', function (req, res) {
 
 app.post('/save', function(req, res){
     console.log('request: ', req.body);
-    console.log('response: ', res.body);
-    newsSchema.findByIdAndUpdate({
-        $push: {
-            article: {
-                title: req.body.title,
-                link: req.body.link
-            }
+    var news = new News(req.body);
+    News.findOneAndUpdate(req.body, news, {upsert: true, new: true}, function(error, doc){
+        if(error){
+            res.send(error);
+        } else {
+            res.send(doc);
+        }
+    })
+    console.log('response: ', res);
+})
+
+app.post('/remove', function(req, res){
+    console.log('req.body: '+req);
+    News.deleteOne(req.body).then(function(err, doc){
+        if(err){
+            throw err;
+        }else{
+            res.render('saved', {news: doc});
         }
     })
 })
 
-app.get('/saved', function(req, res, err){
-    // if(err){
-    //     throw err;
-    // }
-    res.render('saved');
+app.post('/postcomment', function(req, res){
+    console.log('title: (req.body.title)', req.body.title);
+    var news = new News(req.body);
+    News.findOneAndUpdate({title: req.body.title}, {$set: {comment: req.body.comment}}, {upsert: true, new: true, runSettersOnQuery: true}, function(error, doc){
+        if(error){
+            res.send(error);
+        } else {
+            console.log(doc);
+            res.send(doc);
+        }
+    })
+    console.log('response: ', res);
+});
+
+app.get('/saved', function(req, res){
+    News.find({}, function(err, doc){
+        if(err){
+            throw err;
+        }else{
+            // res.send(doc);
+            res.render('saved', {news: doc});
+        }
+    });
 })
 
 app.listen(PORT, function () {

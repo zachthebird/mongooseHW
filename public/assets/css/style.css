@@ -5,6 +5,7 @@
 
 h2{
     float: left;
+    padding-bottom:21px
 }
 
 .btn-success{
@@ -18,4 +19,11 @@ h2{
     border-radius: 8px;
     margin-bottom: 10px;
     padding-bottom: 10px;
+    background-color: white;
+}
+#commentBtn{
+    margin-right: 14px
+}
+body{
+    background-color: azure;
 }
