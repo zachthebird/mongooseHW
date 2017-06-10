@@ -14,14 +14,13 @@
     {{/if}}
   </h2>
   </span>
-    <a style="float: left" href="http://www.{{link}}" target='_blank' title='{{title}}' link='{{link}}'>{{link}}</a>
-    <button style="margin-top: 10px" data-toggle="modal" data-target="#myModal" id='commentBtn' class='btn btn-primary' title='{{title}}'
-      link='{{link}}'>Comment</button>
+    <a style="float: left" href="http://www.{{link}}" target='_blank' data-id='{{_id}}' title='{{title}}' link='{{link}}'>{{link}}</a>
+    <button style="margin-top: 10px" data-toggle="modal" data-target="#myModal" data-id='{{_id}}' id='commentBtn' class='btn btn-primary' title='{{title}}' link='{{link}}'>Comment</button>
     <button style="margin-top: 5px" class='btn btn-danger' id='removeSaved' title='{{title}}' link='{{link}}'>Unsave Article</button>
     <button style="margin-top: 5px" class='btn btn-success' id='showComments' title='{{title}}' link='{{link}}'>Show Comments</button>
   </div><br>
   <div class="modal fade" id="myModal" role="dialog">
-
+    
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -37,7 +36,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" {{!--data-dismiss="modal" --}} id='submitComment' title='{{title}}' link='{{link}}'>Submit</button>
+          <button type="button" class="btn btn-default" {{!--data-dismiss="modal"--}} data-id='{{_id}}' id='submitComment' title='{{title}}' link='{{link}}'>Submit</button>
         </div>
       </div>
     </div>
@@ -46,14 +45,15 @@
 </div>
 
 <script>
+
   $(document).on('click', '#removeSaved', function () {
     event.preventDefault();
     removeSaved(this.getAttribute('title'));
     window.location.reload();
   });
 
-  $(document).on('click', '#submitComment', function () {
-    submitComment(this.getAttribute('title'), $('textarea').val());
+  $(document).on('click', '#submitComment', function(){
+    submitComment(this.getAttribute('data-id'), $('textarea').val());
   })
 
   function removeSaved(title) {
@@ -67,29 +67,27 @@
       console.log(res);
     })
   }
-
-  var commentSubmitted = false;
-
-  function submitComment(title, comment) {
-    console.log(title, comment);
-    $.post('/postcomment', {
-      title: title,
+  
+  var commentSubmitted = false; 
+  function submitComment(id, comment){
+    console.log(id, comment);
+    $.post('/comments/' + id, {
       comment: comment
-    }, function (req, res) {
-      console.log('req.body: ' + req.body);
-      console.log('res: ' + res);
-      if (res === 'success') {
-        commentSubmitted = true;
-      }
+    }, function (req, res){
+        console.log('req.body: '+req.body);
+        console.log('res: '+res);
+        if(res === 'success'){
+          commentSubmitted = true;
+        }
     })
   }
 
-  if (commentSubmitted = true) {
+  if(commentSubmitted = true){
     displaySuccessModal();
   }
 
-  function displaySuccessModal() {
+  function displaySuccessModal(){
 
-    commentSubmitted = false;
+    commentSubmitted = false; 
   }
 </script>

@@ -10,6 +10,8 @@ var cheerio = require('cheerio');
 
 var request = require('request');
 
+var Comments = require('./Comments.js');
+
 var News = require('./newsModel.js');
 
 var app = express();
@@ -17,22 +19,29 @@ var app = express();
 var PORT = 4321;
 
 // parse application/x-www-form-urlencoded 
-app.use(bodyParser.urlencoded({ extended: false }))
- 
+app.use(bodyParser.urlencoded({
+    extended: false
+}))
+
 // parse application/json 
 app.use(bodyParser.json())
 
 app.use(express.static("public"));
 
-mongoose.connect('mongodb://localhost/newsScraper');
+if(process.env.NODE_ENV==="production"){
+  mongoose.connect(process.env.MONGODB_URI);
+} else  {
+  mongoose.connect("mongodb://localhost/newsScraper");
+};
 
-var db = mongoose.createConnection('mongodb://localhost/newsScraper');
+var db = mongoose.connection;
+// var db = mongoose.createConnection('mongodb://localhost/newsScraper');
 
-db.on('error', function(error){
+db.on('error', function (error) {
     console.log("Mongoose error: " + error);
 })
 
-db.once('open', function(){
+db.once('open', function () {
     console.log("Mongoose connection successful");
 })
 
@@ -75,11 +84,14 @@ app.get('/scrape', function (req, res) {
     });
 });
 
-app.post('/save', function(req, res){
+app.post('/save', function (req, res) {
     console.log('request: ', req.body);
     var news = new News(req.body);
-    News.findOneAndUpdate(req.body, news, {upsert: true, new: true}, function(error, doc){
-        if(error){
+    News.findOneAndUpdate(req.body, news, {
+        upsert: true,
+        new: true
+    }, function (error, doc) {
+        if (error) {
             res.send(error);
         } else {
             res.send(doc);
@@ -88,38 +100,60 @@ app.post('/save', function(req, res){
     console.log('response: ', res);
 })
 
-app.post('/remove', function(req, res){
-    console.log('req.body: '+req);
-    News.deleteOne(req.body).then(function(err, doc){
-        if(err){
+app.post('/remove', function (req, res) {
+    console.log('req.body: ' + req);
+    News.deleteOne(req.body).then(function (err, doc) {
+        if (err) {
             throw err;
-        }else{
-            res.render('saved', {news: doc});
+        } else {
+            res.render('saved', {
+                news: doc
+            });
         }
     })
 })
 
-app.post('/postcomment', function(req, res){
-    console.log('title: (req.body.title)', req.body.title);
-    var news = new News(req.body);
-    News.findOneAndUpdate({title: req.body.title}, {$set: {comment: req.body.comment}}, {upsert: true, new: true, runSettersOnQuery: true}, function(error, doc){
-        if(error){
-            res.send(error);
-        } else {
-            console.log(doc);
-            res.send(doc);
+app.post('/comments/:id', function (req, res) {
+    var newComment = new Comments(req.body);
+
+    // And save the new note the db
+    newComment.save(function (error, doc) {
+        // Log any errors
+        if (error) {
+            console.log(error);
         }
-    })
-    console.log('response: ', res);
+        // Otherwise
+        else {
+            console.log('doc._id: ' + doc._id);
+            // Use the article id to find and update it's note
+            News.findOneAndUpdate({
+                    "_id": req.params.id
+                }, {
+                    "comment": doc._id
+                })
+                // Execute the above query
+                .exec(function (err, doc) {
+                    // Log any errors
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        // Or send the document to the browser
+                        res.send(doc);
+                    }
+                });
+        }
+    });
 });
 
-app.get('/saved', function(req, res){
-    News.find({}, function(err, doc){
-        if(err){
+app.get('/saved', function (req, res) {
+    News.find({}, function (err, doc) {
+        if (err) {
             throw err;
-        }else{
+        } else {
             // res.send(doc);
-            res.render('saved', {news: doc});
+            res.render('saved', {
+                news: doc
+            });
         }
     });
 })

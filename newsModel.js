@@ -3,7 +3,11 @@ var Schema = mongoose.Schema;
 
 var newsSchema = new Schema({
   title: String,
-  link: String
+  link: String,
+  comment: {
+      type: Schema.Types.ObjectId,
+      ref: "Comments"
+  }
 });
 
 var News = mongoose.model('News', newsSchema);
