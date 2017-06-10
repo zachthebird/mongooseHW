@@ -160,6 +160,6 @@ app.get('/saved', function (req, res) {
     });
 })
 
-app.listen(process.eventNames.PORT || 3000, function () {
+app.listen(process.env.PORT || 3000, function () {
     console.log('app listening on PORT ' + PORT);
 });
