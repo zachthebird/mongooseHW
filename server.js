@@ -18,6 +18,8 @@ var app = express();
 
 var PORT = 4321;
 
+mongoose.Promise = Promise;
+
 // parse application/x-www-form-urlencoded 
 app.use(bodyParser.urlencoded({
     extended: false
@@ -158,6 +160,6 @@ app.get('/saved', function (req, res) {
     });
 })
 
-app.listen(PORT, function () {
+app.listen(process.eventNames.PORT || 3000, function () {
     console.log('app listening on PORT ' + PORT);
 });
